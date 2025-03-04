@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../components/style/styles.module.css';
+import {PokemonData, PokemonTable} from '../utils/pokemondata';
+import { useDispatch, useSelector } from 'react-redux';
+import {setPokemon, setLoading, setError, addPokemon, editPokemon, deletePokemon} from '../Redux/pokemonSlice'
+// import PokemonTitle from '../utils/pokemonstyling';
+import { PokemonTypography, PokemonAdd, PokemonButton } from '../utils/pokemonstyling';
+
 
 
 const Fetchdata = () =>{
-const[pokemon, setPokemon] = useState([]);
-const[loading, setLoading] = useState(true);
-const[error, setError] = useState(null);
+const dispatch = useDispatch();
+const loading = useSelector((state) => state.pokemon.loading);
+const pokemon = useSelector((state) => state.pokemon.list);
+const error = useSelector((state) => state.pokemon.error);
+// const[pokemon, setPokemon] = useState([]);
+// const[loading, setLoading] = useState(true);
+// const[error, setError] = useState(null);
 const[newPokemon, setNewPokemon] = useState({name: " ", height: " ", weight: " "});
 const[editingPokemon, setEditingPokemon] = useState(null);
 const[editedData, seteditedData] = useState({name: " ", height: " ", weight: " "});
@@ -13,7 +23,7 @@ const[editedData, seteditedData] = useState({name: " ", height: " ", weight: " "
 useEffect(()=>{
       
     const fetchdata = async () =>{
-        
+        dispatch(setLoading(true));
         try {
             const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=100');
             if (!response.ok) {
@@ -25,19 +35,21 @@ useEffect(()=>{
 
             const pokemonDetails = await Promise.all(
             pokemonData.results.map(async (poke) =>{
-             const pokemonreponse = await fetch(poke.url);
-             return pokemonreponse.json();
+             const pokemonResponse = await fetch(poke.url);
+             return pokemonResponse.json();
                 })
             );
-             setPokemon(pokemonDetails);
+            dispatch(setPokemon(pokemonDetails));
+            //  setPokemon(pokemonDetails);
         } catch (error) {
-            setError(error.message);
+            // setError(error.message);
+            dispatch(setError(error.message));
         } finally{
-            setLoading(false);
-        }
-    };
+          dispatch(setLoading(false));
+    }
+  };
     fetchdata();
-}, [])
+}, [dispatch]);
 
 const handleAddPokemon = () =>{
   if(newPokemon.name.trim() === ""){
@@ -54,18 +66,20 @@ const handleAddPokemon = () =>{
     types:[{type:{name: "unknown"}}],
     abilities: [{ability:{name: "unknown"}}],
   };
-   setPokemon([...pokemon, newEntry]);
+  //  setPokemon([...pokemon, newEntry]);
+  dispatch(addPokemon(newEntry));
    setNewPokemon({name: " ", height: " ", weight: " "});
 }
 
 
-const handleEditPokemon = (id, updatedData) =>{
-  setPokemon(
-     pokemon.map((poke) => 
-        poke.id === id ? {...poke, ...updatedData} : poke
-    )
-  );
-};
+// const handleEditPokemon = () =>{
+//   dispatch(editPokemon({id: editingPokemon, updatedData: editedData}));
+//   // setPokemon(
+//   //    pokemon.map((poke) => 
+//   //       poke.id === id ? {...poke, ...updatedData} : poke
+//   //   )
+//   // );
+// };
 
 const handleEditClick = (poke) =>{
   setEditingPokemon(poke.id);
@@ -73,20 +87,20 @@ const handleEditClick = (poke) =>{
 };
 
 const handleUpdatedClick =()=>{
-  handleEditPokemon(editingPokemon, editedData);
+  // handleEditPokemon(editingPokemon, editedData);
+  dispatch(editPokemon({id: editingPokemon, updatedData: editedData})); 
   setEditingPokemon(null);
 }
 
 const handleDelete = (id) =>{
-    setPokemon(pokemon.filter((poke) => poke.id !== id));
-
+    // setPokemon(pokemon.filter((poke) => poke.id !== id));
+    dispatch(deletePokemon(id));
 }
 
 
     return(
         <div>
-            <h1 className={styles.title}>Pokemon List</h1>
-
+            <PokemonTypography text={PokemonData.title1} />
             <div>
            <input 
            type="text"
@@ -108,12 +122,13 @@ const handleDelete = (id) =>{
            onChange={(e) => setNewPokemon({...newPokemon, weight: e.target.value})}
 
             />
-           <button onClick={handleAddPokemon}>Add pokemon</button>
+           {/* <button onClick={handleAddPokemon}>Add pokemon</button> */}
+           <PokemonAdd onClick={handleAddPokemon} btnText={PokemonData.btn1}/>
 
            </div>
 
         {loading ? (
-          <p>Loading......</p>
+          <PokemonTypography text={PokemonData.text2} />
         ) : error ? (
           <p>Error: {error}</p>
         ) : (
@@ -121,13 +136,16 @@ const handleDelete = (id) =>{
            <table className={styles.pokemontable}>
             <thead>
                 <tr>
-                <td>ID</td>
+                  {PokemonTable.map((header)=>(
+                    <th key={header.key}>{header.label}</th>
+                  ))}
+                {/* <td>ID</td>
                 <td>Name</td>
                 <td>Images</td>
                 <td>Height</td>
                 <td>Weight</td>
                 <td>Types</td>
-                <td>Abilities</td>
+                <td>Abilities</td> */}
                 </tr>
             </thead>
 <tbody>
@@ -149,14 +167,14 @@ const handleDelete = (id) =>{
                   <td>{poke.sprites && poke.sprites.front_default ? ( 
                     <img className={styles.pokemonimage} src={poke.sprites.front_default} alt={poke.name} />
                   ) : (
-                    <p>No image available</p> 
+                    <PokemonTypography text={PokemonData.text3} />
                   )}
                   </td>
                   <td>
                     {editingPokemon === poke.id ? (
                       <input 
                       type="text"
-                       value={editedData.id}
+                       value={editedData.height}
                        onChange={(e)=>seteditedData ({...editedData, height: e.target.value})}                      
                       />
                     ):(
@@ -168,7 +186,7 @@ const handleDelete = (id) =>{
                    {editingPokemon === poke.id ? (
                     <input 
                     type="text"
-                    value={editedData.id}
+                    value={editedData.weight}
                     onChange={(e) => seteditedData({...editedData, weight: e.target.value})}
                     />
                    ):(
@@ -180,12 +198,16 @@ const handleDelete = (id) =>{
 
                   <td>
                     {editingPokemon === poke.id ? (
-                          <button onClick={handleUpdatedClick}>save</button>
+                          // <button onClick={handleUpdatedClick}>save</button>
+                         <PokemonButton onClick={handleUpdatedClick} btn={PokemonData.btn2}/>
+
                     ): (
-                      <button onClick={()=> handleEditClick(poke)}>Edit</button>  
+                      // <button onClick={()=> handleEditClick(poke)}>Edit</button>  
+                      <PokemonButton onClick={()=> handleEditClick(poke)} btn={PokemonData.btn3} />
                     )}
 
-                    <button onClick={()=> handleDelete(poke.id)}>Delete</button>
+                    {/* <button onClick={()=> handleDelete(poke.id)}>Delete</button> */}
+                    <PokemonButton onClick={()=> handleDelete(poke.id)} btn={PokemonData.btn4}/>
 
                   </td>
                 </tr>
@@ -193,7 +215,8 @@ const handleDelete = (id) =>{
             ) : (
                 <tr> 
                     <td colSpan="7">
-                    No Pokemon found.
+                    {/* No Pokemon found. */}
+                    <PokemonTypography text={PokemonData.text1} />
                     </td> 
                     </tr>
             )}
