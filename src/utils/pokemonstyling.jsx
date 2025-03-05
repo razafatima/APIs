@@ -21,9 +21,11 @@ const PokemonButton = ({btn, onClick}) =>{
           <button className={`${styles.btns}`} onClick={onClick}>{btn}</button>
     );
 }
+const PokemonEdit = ({btnsText, onClick}) => {
 
+    return(
+        <button className={`${styles.editbtn}`} onClick={onClick}>{btnsText}</button>
+    )
+}
 
-
-
-
-export {PokemonTypography, PokemonAdd, PokemonButton};
+export {PokemonTypography, PokemonAdd, PokemonButton, PokemonEdit};

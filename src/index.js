@@ -3,17 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { Provider } from "react-redux"; // Redux ke liye Provider import karo
-import {store, persistor} from "../src/Redux/store"; // Apna store import karo
-import { PersistGate } from'redux-persist/integration/react'; // PersistGate import karo
+import { Provider } from "react-redux";
+import store from "../src/Redux/store";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <PersistGate persistor={persistor}>
         <App />
-      </PersistGate>
     </Provider>
   </React.StrictMode>
 );

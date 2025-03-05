@@ -1,15 +1,14 @@
-// import Apis from '../src/components/APIs';
-import Pokemon from '../src/components/pokemon';
+import React from 'react';
+import PokemonTable from '../src/components/pokemon';
+import AddPokemonForm from '../src/components/form';
 
-function App() {
-  return (
-    <div>
-        
-        {/* <Apis /> */}
-        <Pokemon />
-
-    </div>
-  );
+const Home = () => {
+    return (
+        <div>
+            <AddPokemonForm />
+            <PokemonTable />
+        </div>
+    );
 }
 
-export default App;
+export default Home;
